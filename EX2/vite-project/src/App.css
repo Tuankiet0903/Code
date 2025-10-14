@@ -42,3 +42,70 @@
 .read-the-docs {
   color: #888;
 }
+.game-container {
+  text-align: center;
+  font-family: sans-serif;
+  background: #0d1117;
+  color: white;
+  padding: 20px;
+  height: 100vh;
+}
+
+.board {
+  position: relative;
+  width: 360px;
+  height: 360px;
+  margin: 20px auto;
+  background: #1b1f27;
+  border-radius: 10px;
+  display: grid;
+  grid-template-columns: repeat(4, 90px);
+  grid-template-rows: repeat(4, 90px);
+}
+
+.tile {
+  position: absolute;
+  width: 80px;
+  height: 80px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  border-radius: 8px;
+  color: #333;
+  transition: transform 0.15s ease-in-out, background-color 0.2s;
+}
+
+.tile.merged {
+  animation: mergePulse 0.2s ease-in-out;
+}
+
+@keyframes mergePulse {
+  0% {
+    transform: scale(1);
+  }
+
+  50% {
+    transform: scale(1.2);
+  }
+
+  100% {
+    transform: scale(1);
+  }
+}
+
+.reset-btn {
+  margin-top: 15px;
+  background: #007bff;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  padding: 10px 20px;
+  cursor: pointer;
+  font-weight: bold;
+  transition: 0.2s;
+}
+
+.reset-btn:hover {
+  background: #0056b3;
+}

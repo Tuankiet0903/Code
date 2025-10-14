@@ -1,0 +1,22 @@
+version: '3.9'
+services:
+  app:
+    build: .
+    container_name: express_app
+    ports:
+      - "3000:3000"
+    environment:
+      - DATABASE_URL=postgresql://postgres:password@db:5432/prisma_db?schema=public
+    depends_on:
+      - db
+
+  db:
+    image: postgres:15
+    container_name: postgres_db
+    restart: always
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: prisma_db
+    ports:
+      - "5432:5432"
