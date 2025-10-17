@@ -3,6 +3,7 @@ import express from "express";
 import http from "http";
 import { Server } from "socket.io";
 import cors from "cors";
+import { crawlAll } from "./services/crawlService.js";
 
 const app = express();
 app.use(cors({ origin: "*", methods: ["GET", "POST"] }));
@@ -82,4 +83,8 @@ io.on("connection", (socket) => {
 
 server.listen(3001, "0.0.0.0", () => {
   console.log("🚀 Chess socket server running on http://localhost:3001");
+
+  (async () => {
+    await crawlAll();
+  })();
 });

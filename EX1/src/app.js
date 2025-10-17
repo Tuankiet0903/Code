@@ -1,6 +1,7 @@
 import express from "express";
 import userRoutes from "./routes/userRoutes.js";
 import postRoutes from "./routes/postRoutes.js";
+import crawlRoutes from "./routes/crawlRoutes.js";
 import morgan from "morgan";
 
 const app = express();
