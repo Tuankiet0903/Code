@@ -2,7 +2,6 @@ import axios from "axios";
 import fs from "fs-extra";
 import { PROVINCES } from "../utils/crawlProvinces.js";
 import pLimit from "p-limit";
-import cliProgress from "cli-progress";
 import colors from "colors";
 
 const CONCURRENCY_LIMIT = 1;
@@ -10,38 +9,20 @@ const limit = pLimit(CONCURRENCY_LIMIT);
 
 const YEAR = 2025;
 const OUTPUT_DIR = `./data/${YEAR}`;
-const END_ID = 200; // Giới hạn số lượng ID / tỉnh
-const BATCH_SIZE = 1;
+const END_ID = 200; // Số lượng ID / tỉnh
 
-// 🎛️ MultiBar setup
-const multibar = new cliProgress.MultiBar(
-  {
-    clearOnComplete: false,
-    hideCursor: true,
-    format:
-      "{province} |" +
-      colors.cyan("{bar}") +
-      "| {value}/{total} ({percentage}%) | {duration_formatted}",
-  },
-  cliProgress.Presets.shades_grey
-);
-
-// 📊 Tổng số record toàn quốc
 let totalRecords = 0;
 
 async function crawlProvince(province) {
   const outPath = `${OUTPUT_DIR}/${province.name}.json`;
   await fs.ensureFile(outPath);
   const stream = fs.createWriteStream(outPath);
-  stream.write("["); // Bắt đầu JSON array
+  stream.write("[");
 
   let first = true;
   let count = 0;
 
-  // ⏳ Tạo progress bar riêng cho tỉnh này
-  const bar = multibar.create(END_ID, 0, {
-    province: colors.yellow(province.name),
-  });
+  console.log(colors.yellow(`\n▶️  Crawling ${province.name}...`));
 
   for (let i = 1; i <= END_ID; i++) {
     const id = `${province.code}${i.toString().padStart(6, "0")}`;
@@ -67,7 +48,6 @@ async function crawlProvince(province) {
         lang_type: data.foreign_language_type,
       };
 
-      // 🧹 Bỏ key null hoặc rỗng để giảm dung lượng file
       Object.keys(student).forEach(
         (k) => (student[k] == null || student[k] === "") && delete student[k]
       );
@@ -77,7 +57,9 @@ async function crawlProvince(province) {
       first = false;
 
       count++;
-      if (count % BATCH_SIZE === 0) bar.update(i);
+
+      // 👉 Hiện tiến trình rõ ràng: 1/200, 2/200, ...
+      process.stdout.write(`📍 [${province.name}] ${i}/${END_ID}\r`);
     } catch (err) {
       if (err.response?.status !== 404) {
         console.error(`\n❌ [${province.name}] - ${id}: ${err.message}`);
@@ -85,14 +67,11 @@ async function crawlProvince(province) {
     }
   }
 
-  bar.update(END_ID);
-  bar.stop();
-
   stream.write("]");
   stream.end();
 
-  totalRecords += count; // ➕ Cộng dồn tổng
-  console.log(`\n✅ Done [${province.name}] (${count} records)`);
+  totalRecords += count;
+  console.log(colors.green(`\n✅ Done [${province.name}] (${count} records)`));
 }
 
 export async function crawlAll() {
@@ -100,7 +79,7 @@ export async function crawlAll() {
     `🚀 Starting THPT data crawler...\n⚙️  Limit concurrency: ${CONCURRENCY_LIMIT}\n`
   );
 
-  const startTime = performance.now(); // ⏱️ Bắt đầu đo thời gian
+  const startTime = performance.now();
 
   const tasks = PROVINCES.map((province) =>
     limit(async () => {
@@ -109,9 +88,8 @@ export async function crawlAll() {
   );
 
   await Promise.all(tasks);
-  multibar.stop();
 
-  const endTime = performance.now(); // ⏱️ Kết thúc
+  const endTime = performance.now();
   const durationSec = ((endTime - startTime) / 1000).toFixed(2);
   const durationMin = (durationSec / 60).toFixed(2);
 
