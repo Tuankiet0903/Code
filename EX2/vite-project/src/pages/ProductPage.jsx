@@ -50,14 +50,12 @@ export default function ProductPage() {
         onNavigate={setPage}
       />
 
-      <main className="container mx-auto px-4 py-8 h-full">
+      <main>
         {!token ? (
-          // Khi chưa đăng nhập
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="flex justify-center items-center min-h-[calc(100vh-20rem)]">
             <Login onLogin={(t) => setToken(t)} />
           </div>
         ) : (
-          // Khi đã đăng nhập
           <>
             {page === "home" && <Home token={token} user={user} />}
             {page === "cart" && <Cart />}

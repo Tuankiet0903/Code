@@ -1,7 +1,7 @@
+// src/routes/products.js
 import express from "express";
 import { PrismaClient } from "@prisma/client";
-import bcrypt from "bcrypt";
-import jwt from "jsonwebtoken";
+import cache from "../middleware/cache.js";
 
 const prisma = new PrismaClient();
 const router = express.Router();
@@ -15,51 +15,38 @@ const router = express.Router();
  *       properties:
  *         id:
  *           type: integer
+ *         // Add other user properties based on your Prisma schema, e.g.:
  *         name:
  *           type: string
  *         email:
  *           type: string
- *     LoginRequest:
- *       type: object
- *       required:
- *         - email
- *         - password
- *       properties:
- *         email:
- *           type: string
- *           format: email
- *         password:
- *           type: string
- *           minLength: 1
- *     LoginResponse:
- *       type: object
- *       properties:
- *         token:
- *           type: string
+ *         // etc.
  */
 
 /**
+ * GET /products/:id
  * @swagger
- * /api/v1/auth/login:
- *   post:
- *     summary: User login
+ * /products/{id}:
+ *   get:
+ *     summary: Get user by ID
  *     tags:
- *       - Authentication
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             $ref: '#/components/schemas/LoginRequest'
+ *       - Users
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: User ID
  *     responses:
  *       200:
- *         description: Login successful, returns JWT token
+ *         description: User data
  *         content:
  *           application/json:
  *             schema:
- *               $ref: '#/components/schemas/LoginResponse'
- *       401:
- *         description: Invalid credentials
+ *               $ref: '#/components/schemas/User'
+ *       404:
+ *         description: User not found
  *         content:
  *           application/json:
  *             schema:
@@ -68,7 +55,7 @@ const router = express.Router();
  *                 error:
  *                   type: string
  *       500:
- *         description: Internal server error
+ *         description: Server error
  *         content:
  *           application/json:
  *             schema:
@@ -77,20 +64,15 @@ const router = express.Router();
  *                 error:
  *                   type: string
  */
-router.post("/login", async (req, res) => {
-  const { email, password } = req.body;
-  const user = await prisma.user.findUnique({ where: { email } });
-  if (!user) return res.status(401).json({ error: "Invalid credentials" });
-
-  const ok = await bcrypt.compare(password, user.password);
-  if (!ok) return res.status(401).json({ error: "Invalid credentials" });
-
-  const token = jwt.sign(
-    { userId: user.id, role: user.role },
-    process.env.JWT_SECRET,
-    { expiresIn: process.env.JWT_EXPIRES_IN || "1d" }
-  );
-  res.json({ token });
-});
+router.get(
+  "/:id",
+  cache((req) => `user:${req.params.id}`, 60),
+  async (req, res) => {
+    const id = Number(req.params.id);
+    const user = await prisma.user.findUnique({ where: { id } });
+    if (!user) return res.status(404).json({ error: "User not found" });
+    res.json(user);
+  }
+);
 
 export default router;

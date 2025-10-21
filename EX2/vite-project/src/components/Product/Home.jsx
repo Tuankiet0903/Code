@@ -39,7 +39,7 @@ export default function Home() {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 my-10">
       {/* Search bar */}
       <div className="flex items-center justify-center gap-3">
         <div className="w-full max-w-2xl">
@@ -69,7 +69,7 @@ export default function Home() {
       </div>
 
       {/* Product List */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mx-40 my-10">
         <div className="lg:col-span-3">
           <ProductList
             onAddToCart={addToCart}

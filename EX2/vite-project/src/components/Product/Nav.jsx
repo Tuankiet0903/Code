@@ -3,7 +3,7 @@ import React from "react";
 
 export default function Nav({ token, user, onLogout, onNavigate }) {
   return (
-    <nav className="bg-white shadow-md">
+    <nav className="bg-purple-200 shadow-md">
       <div className="container mx-auto flex items-center justify-between py-4 px-4">
         {/* Logo + menu */}
         <div className="flex items-center gap-6">
