@@ -7,6 +7,7 @@ import Navbar from "./components/Navbar.jsx";
 import ChessPage from "./pages/ChessPage.jsx";
 import ChessPageMultiplayer from "./pages/ChessPageMulti.jsx";
 import ThreejsPage from "./pages/Threejs.jsx";
+import ProductPage from "./pages/ProductPage.jsx";
 
 function App() {
   return (
@@ -32,6 +33,7 @@ function App() {
             </div>
           }
         />
+        <Route path="products" element={<ProductPage />} />
       </Routes>
     </>
   );

@@ -1,0 +1,38 @@
+{
+  "name": "smartshop-backend",
+  "version": "1.0.0",
+  "main": "src/server.js",
+  "type": "module",
+  "scripts": {
+    "start": "node src/server.js",
+    "dev": "nodemon src/server.js",
+    "prisma:migrate": "prisma migrate dev --name init",
+    "prisma:generate": "prisma generate",
+    "db:seed": "ts-node --transpile-only prisma/seed.ts",
+    "lint": "eslint .",
+    "benchmark:uncached": "node benchmarks/bench.js uncached",
+    "benchmark:cached": "node benchmarks/bench.js cached"
+  },
+  "dependencies": {
+    "@prisma/client": "^4.0.0",
+    "bcrypt": "^5.1.0",
+    "bcryptjs": "^3.0.2",
+    "body-parser": "^1.20.0",
+    "cors": "^2.8.5",
+    "dotenv": "^16.0.0",
+    "express": "^4.18.0",
+    "ioredis": "^5.0.6",
+    "joi": "^18.0.1",
+    "jsonwebtoken": "^9.0.0",
+    "morgan": "^1.10.0",
+    "swagger-jsdoc": "^6.2.8",
+    "swagger-ui-express": "^4.6.3",
+    "winston": "^3.8.2"
+  },
+  "devDependencies": {
+    "faker": "^5.5.3",
+    "nodemon": "^2.0.22",
+    "prisma": "^4.0.0",
+    "ts-node": "^10.9.1"
+  }
+}

@@ -84,7 +84,7 @@ io.on("connection", (socket) => {
 server.listen(3001, "0.0.0.0", () => {
   console.log("🚀 Chess socket server running on http://localhost:3001");
 
-  (async () => {
-    await crawlAll();
-  })();
+  // (async () => {
+  //   await crawlAll();
+  // })();
 });
