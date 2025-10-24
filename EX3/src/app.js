@@ -25,6 +25,7 @@ app.use(
     credentials: true,
   })
 );
+app.get("/", (req, res) => res.send("SmartShop API running"));
 
 app.use("/api/v1/auth", authRoutes);
 
@@ -33,7 +34,5 @@ app.use("/api/v1/products", productRoutes);
 app.use("/api/v1/admin", adminRoutes);
 app.use("/api/v1/users", userRoutes);
 app.use("/api/v1/cart", cartRoutes);
-
-app.get("/", (req, res) => res.send("SmartShop API running"));
 
 export default app;

@@ -46,6 +46,14 @@ src/
 
 ## ⚙️ Cài đặt & Chạy dự án
 
+# Build and start
+
+docker compose up --build
+
+# Stop and clean
+
+docker compose down -v
+
 ### 1️⃣ Cài đặt dependencies
 
 ```bash

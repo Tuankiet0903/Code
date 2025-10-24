@@ -2,7 +2,7 @@ import "./App.css";
 import { BrowserRouter, Routes, Route } from "react-router";
 import ComicPage from "./pages/ComicPage";
 import WeatherBroadcast from "./pages/WeatherBoardcast";
-import Board2048 from "./pages/2048page";
+import Board2048 from "./pages/2048Page";
 import Navbar from "./components/Navbar.jsx";
 import ChessPage from "./pages/ChessPage.jsx";
 import ChessPageMultiplayer from "./pages/ChessPageMulti.jsx";

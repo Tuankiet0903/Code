@@ -1,20 +1,17 @@
-# Use the latest LTS version of Node.js
-FROM node:22-alpine
+# ---- Step 1: Build the app ----
+FROM node:22 AS builder
 
-# Set the working directory inside the container
 WORKDIR /app
-
-# Copy package.json and package-lock.json
 COPY package*.json ./
-
-# Install dependencies
 RUN npm install
-
-# Copy the rest of your application files
 COPY . .
+RUN npm run build
 
-# Expose the port your app runs on
+# ---- Step 2: Serve the built app ----
+FROM node:22-slim
+
+WORKDIR /app
+RUN npm install -g serve
+COPY --from=builder /app/dist ./dist
 EXPOSE 5173
-
-# Define the command to run your app
-CMD ["npm", "start"]
+CMD ["serve", "-s", "dist", "-l", "5173"]

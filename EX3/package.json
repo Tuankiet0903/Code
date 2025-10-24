@@ -8,14 +8,13 @@
     "dev": "nodemon src/server.js",
     "prisma:migrate": "prisma migrate dev --name init",
     "prisma:generate": "prisma generate",
-    "db:seed": "ts-node --transpile-only prisma/seed.ts",
+    "db:seed": "node prisma/seed.js",
     "lint": "eslint .",
     "benchmark:uncached": "node benchmarks/bench.js uncached",
     "benchmark:cached": "node benchmarks/bench.js cached"
   },
   "dependencies": {
-    "@prisma/client": "^4.0.0",
-    "bcrypt": "^5.1.0",
+    "@prisma/client": "^6.18.0",
     "bcryptjs": "^3.0.2",
     "body-parser": "^1.20.0",
     "cors": "^2.8.5",
@@ -33,7 +32,7 @@
   "devDependencies": {
     "faker": "^5.5.3",
     "nodemon": "^2.0.22",
-    "prisma": "^4.0.0",
+    "prisma": "^6.18.0",
     "ts-node": "^10.9.1"
   }
 }
