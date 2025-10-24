@@ -3,6 +3,7 @@ import { PrismaClient } from "@prisma/client";
 import auth from "../middleware/auth.js";
 import redis from "../services/redisClient.js";
 import Joi from "joi";
+import logger from "../utils/logger.js";
 
 const prisma = new PrismaClient();
 const router = express.Router();
@@ -182,6 +183,7 @@ router.get("/categories", async (req, res) => {
     await redis.set(cacheKey, JSON.stringify(categories), "EX", 60); // 1 min cache
     res.json(categories);
   } catch (err) {
+    logger.error(err);
     console.error(err);
     res.status(500).json({ error: "Failed to fetch categories" });
   }
@@ -239,6 +241,8 @@ router.get("/products", async (req, res) => {
       take: Number(limit),
       select: {
         id: true,
+        sku: true,
+        description: true,
         name: true,
         price: true,
         stock: true,
@@ -250,6 +254,7 @@ router.get("/products", async (req, res) => {
     await redis.set(cacheKey, JSON.stringify(products), "EX", 60); // 1 min cache
     res.json(products);
   } catch (err) {
+    logger.error(err);
     console.error(err);
     res.status(500).json({ error: "Failed to fetch products" });
   }
@@ -304,8 +309,114 @@ router.post("/categories", async (req, res) => {
     await redis.del("categories:all"); // invalidate cache
     res.status(201).json(category);
   } catch (err) {
+    logger.error(err);
     console.error(err);
     res.status(500).json({ error: "Failed to create category" });
+  }
+});
+
+/**
+ * PUT /categories/{id}
+ * @swagger
+ * /api/v1/admin/categories/{id}:
+ *   put:
+ *     summary: Update a category
+ *     tags:
+ *       - Categories
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: Category ID
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/CategoryInput'
+ *     responses:
+ *       200:
+ *         description: Updated category
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Category'
+ *       400:
+ *         description: Validation error
+ *       404:
+ *         description: Category not found
+ *       500:
+ *         description: Server error
+ */
+router.put("/categories/:id", async (req, res) => {
+  try {
+    const id = Number(req.params.id);
+    const { error, value } = categorySchema.validate(req.body);
+    if (error) return res.status(400).json({ error: error.details[0].message });
+
+    const existing = await prisma.category.findUnique({ where: { id } });
+    if (!existing) return res.status(404).json({ error: "Category not found" });
+
+    const updated = await prisma.category.update({
+      where: { id },
+      data: value,
+    });
+
+    await redis.del("categories:all");
+    res.json(updated);
+  } catch (err) {
+    console.error(err);
+    logger.error(err);
+    res.status(500).json({ error: "Failed to update category" });
+  }
+});
+
+/**
+ * DELETE /categories/{id}
+ * @swagger
+ * /api/v1/admin/categories/{id}:
+ *   delete:
+ *     summary: Delete a category
+ *     tags:
+ *       - Categories
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: Category ID
+ *     responses:
+ *       204:
+ *         description: Category deleted
+ *       404:
+ *         description: Category not found
+ *       500:
+ *         description: Server error
+ */
+router.delete("/categories/:id", async (req, res) => {
+  try {
+    const id = Number(req.params.id);
+
+    const productCount = await prisma.product.count({
+      where: { categoryId: id },
+    });
+
+    if (productCount > 0) {
+      return res.status(400).json({
+        error: `Cannot delete category: ${productCount} products still linked.`,
+      });
+    }
+
+    await prisma.category.delete({ where: { id } });
+    await redis.del("categories:all");
+    res.status(204).send();
+  } catch (err) {
+    logger.error(err);
+    console.error(err);
+    res.status(500).json({ error: "Failed to delete category" });
   }
 });
 
@@ -362,8 +473,106 @@ router.post("/products", async (req, res) => {
     await redis.flushall(); // simple approach, can optimize
     res.status(201).json(created);
   } catch (err) {
+    logger.error(err);
     console.error(err);
     res.status(500).json({ error: "Failed to create product" });
+  }
+});
+
+/**
+ * PUT /products/{id}
+ * @swagger
+ * /api/v1/admin/products/{id}:
+ *   put:
+ *     summary: Update a product
+ *     tags:
+ *       - Products
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: Product ID
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/ProductInput'
+ *     responses:
+ *       200:
+ *         description: Updated product
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Product'
+ *       400:
+ *         description: Validation error
+ *       404:
+ *         description: Product not found
+ *       500:
+ *         description: Server error
+ */
+router.put("/products/:id", async (req, res) => {
+  try {
+    const id = Number(req.params.id);
+    const { error, value } = productSchema.validate(req.body);
+    if (error) return res.status(400).json({ error: error.details[0].message });
+
+    const existing = await prisma.product.findUnique({ where: { id } });
+    if (!existing) return res.status(404).json({ error: "Product not found" });
+
+    const updated = await prisma.product.update({
+      where: { id },
+      data: { ...value, version: { increment: 1 } },
+    });
+
+    await redis.flushall(); // clear product list cache
+    res.json(updated);
+  } catch (err) {
+    logger.error(err);
+    console.error(err);
+    res.status(500).json({ error: "Failed to update product" });
+  }
+});
+
+/**
+ * DELETE /products/{id}
+ * @swagger
+ * /api/v1/admin/products/{id}:
+ *   delete:
+ *     summary: Delete a product
+ *     tags:
+ *       - Products
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: Product ID
+ *     responses:
+ *       204:
+ *         description: Product deleted
+ *       404:
+ *         description: Product not found
+ *       500:
+ *         description: Server error
+ */
+router.delete("/products/:id", async (req, res) => {
+  try {
+    const id = Number(req.params.id);
+    const existing = await prisma.product.findUnique({ where: { id } });
+    if (!existing) return res.status(404).json({ error: "Product not found" });
+
+    await prisma.product.delete({ where: { id } });
+    await redis.flushall();
+    res.status(204).send();
+  } catch (err) {
+    logger.error(err);
+    console.error(err);
+    res.status(500).json({ error: "Failed to delete product" });
   }
 });
 
@@ -439,6 +648,7 @@ router.post("/products/:id/restock", async (req, res) => {
     await redis.del(`product:${id}`);
     res.json(result);
   } catch (err) {
+    logger.error(err);
     console.error(err);
     res.status(500).json({ error: "Failed to restock product" });
   }
@@ -518,6 +728,7 @@ router.post("/products/:id/price", async (req, res) => {
     await redis.del(`product:${id}`);
     res.json(result);
   } catch (err) {
+    logger.error(err);
     console.error(err);
     res.status(500).json({ error: "Failed to adjust product price" });
   }

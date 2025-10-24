@@ -6,8 +6,25 @@ export default function AdminPage() {
   const [categories, setCategories] = useState([]);
   const [products, setProducts] = useState([]);
 
-  const [catName, setCatName] = useState("");
-  const [productForm, setProductForm] = useState({
+  // ---- CATEGORY FORMS ----
+  const [newCategory, setNewCategory] = useState("");
+  const [updateCategory, setUpdateCategory] = useState({
+    id: "",
+    name: "",
+  });
+
+  // ---- PRODUCT FORMS ----
+  const [createForm, setCreateForm] = useState({
+    sku: "",
+    name: "",
+    description: "",
+    price: "",
+    stock: "",
+    categoryId: "",
+  });
+
+  const [updateForm, setUpdateForm] = useState({
+    id: "",
     sku: "",
     name: "",
     description: "",
@@ -58,28 +75,57 @@ export default function AdminPage() {
   // CATEGORY
   // -------------------------
   const handleCreateCategory = async () => {
-    if (!catName) return toast.error("Enter category name");
+    if (!newCategory) return toast.error("Enter category name");
     try {
-      const res = await api.createCategory(catName);
+      const res = await api.createCategory(newCategory);
       toast.success("Category created!");
-      setCatName("");
+      setNewCategory("");
       setCategories((prev) => [...prev, res]);
     } catch (err) {
       toast.error(err.response?.data?.error || "Error creating category");
     }
   };
 
+  const handleUpdateCategory = async () => {
+    const { id, name } = updateCategory;
+    if (!id) return toast.error("Select a category to update");
+    if (!name.trim()) return toast.error("Enter new category name");
+    try {
+      const res = await api.updateCategory(id, name);
+      toast.success("Category updated!");
+      setCategories((prev) => prev.map((c) => (c.id === id ? res : c)));
+      setUpdateCategory({ id: "", name: "" });
+    } catch (err) {
+      toast.error(err.response?.data?.error || "Error updating category");
+    }
+  };
+
+  const handleDeleteCategory = async () => {
+    const { id, name } = updateCategory;
+    if (!id) return toast.error("Select a category to delete");
+    if (!window.confirm(`Delete category "${name}"?`)) return;
+
+    try {
+      await api.deleteCategory(id);
+      toast.success("Category deleted!");
+      setCategories((prev) => prev.filter((c) => c.id !== id));
+      setUpdateCategory({ id: "", name: "" });
+    } catch (error) {
+      const message = error.message || "Error deleting category";
+      toast.error(message);
+    }
+  };
+
   // -------------------------
-  // PRODUCT
+  // PRODUCT CREATE / UPDATE / DELETE
   // -------------------------
   const handleCreateProduct = async () => {
-    const { sku, name, price, stock, categoryId } = productForm;
-
+    const { sku, name, price, stock, categoryId } = createForm;
     if (!sku || !name || !price || !stock || !categoryId)
       return toast.error("Please fill all required fields");
 
     const newProduct = {
-      ...productForm,
+      ...createForm,
       price: Number(price),
       stock: Number(stock),
     };
@@ -88,9 +134,7 @@ export default function AdminPage() {
       const res = await api.createProduct(newProduct);
       toast.success("Product created!");
       setProducts((prev) => [...prev, res]);
-
-      // ✅ Reset form
-      setProductForm({
+      setCreateForm({
         sku: "",
         name: "",
         description: "",
@@ -103,6 +147,54 @@ export default function AdminPage() {
     }
   };
 
+  const handleUpdateProduct = async () => {
+    const { id, price, stock } = updateForm;
+    if (!id) return toast.error("Select product to update");
+    try {
+      const updated = {
+        ...updateForm,
+        price: Number(price),
+        stock: Number(stock),
+      };
+      const res = await api.updateProduct(id, updated);
+      toast.success("Product updated!");
+      setProducts((prev) => prev.map((p) => (p.id === Number(id) ? res : p)));
+      setUpdateForm({
+        id: "",
+        sku: "",
+        name: "",
+        description: "",
+        price: "",
+        stock: "",
+        categoryId: "",
+      });
+    } catch (err) {
+      toast.error(err.response?.data?.error || "Error updating product");
+    }
+  };
+
+  const handleDeleteProduct = async () => {
+    const { id, name } = updateForm;
+    if (!id) return toast.error("Select product to delete");
+    if (!window.confirm(`Delete product "${name}"?`)) return;
+    try {
+      await api.deleteProduct(id);
+      toast.success("Product deleted!");
+      setProducts((prev) => prev.filter((p) => p.id !== Number(id)));
+      setUpdateForm({
+        id: "",
+        sku: "",
+        name: "",
+        description: "",
+        price: "",
+        stock: "",
+        categoryId: "",
+      });
+    } catch (err) {
+      toast.error(err.response?.data?.error || "Error deleting product");
+    }
+  };
+
   // -------------------------
   // RESTOCK PRODUCT
   // -------------------------
@@ -111,8 +203,8 @@ export default function AdminPage() {
       ...restock,
       id: p.id,
       name: p.name,
-      search: p.name, // ✅ hiển thị tên vào ô input
-      showList: false, // ✅ ẩn danh sách
+      search: p.name,
+      showList: false,
       stock: p.stock,
     });
   };
@@ -123,24 +215,20 @@ export default function AdminPage() {
     try {
       const res = await api.restockProduct(restock.id, restock.qty);
       toast.success("Stock updated!");
-
       setProducts((prev) =>
         prev.map((p) =>
           p.id === Number(restock.id)
-            ? {
-                ...p,
-                stock: res.stock ?? p.stock + Number(restock.qty),
-              }
+            ? { ...p, stock: res.stock ?? p.stock + Number(restock.qty) }
             : p
         )
       );
-
       setRestock({
         id: "",
         name: "",
         qty: "",
         search: "",
         showList: false,
+        stock: "",
       });
     } catch (err) {
       toast.error(err.response?.data?.error || "Error restocking");
@@ -156,8 +244,8 @@ export default function AdminPage() {
       id: p.id,
       name: p.name,
       oldPrice: p.price,
-      search: p.name, // ✅ hiển thị tên vào ô input
-      showList: false, // ✅ ẩn danh sách
+      search: p.name,
+      showList: false,
     });
   };
 
@@ -170,13 +258,11 @@ export default function AdminPage() {
     try {
       await api.adjustPrice(id, newPrice);
       toast.success("Price updated!");
-
       setProducts((prev) =>
         prev.map((p) =>
           p.id === Number(id) ? { ...p, price: Number(newPrice) } : p
         )
       );
-
       setPriceForm({
         id: "",
         name: "",
@@ -197,7 +283,7 @@ export default function AdminPage() {
     <div className="min-h-screen bg-gray-50 p-6">
       <h1 className="text-2xl font-semibold mb-6">Admin Dashboard</h1>
 
-      {/* CATEGORY */}
+      {/* CATEGORY: CREATE */}
       <div className="bg-white shadow rounded-lg p-5 mb-8">
         <h2 className="text-lg font-medium mb-3">Create Category</h2>
         <div className="flex gap-3">
@@ -205,14 +291,62 @@ export default function AdminPage() {
             type="text"
             placeholder="Category name"
             className="border rounded px-3 py-2 flex-1"
-            value={catName}
-            onChange={(e) => setCatName(e.target.value)}
+            value={newCategory}
+            onChange={(e) => setNewCategory(e.target.value)}
           />
           <button
             onClick={handleCreateCategory}
             className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
           >
             Add
+          </button>
+        </div>
+      </div>
+
+      {/* CATEGORY: UPDATE + DELETE */}
+      <div className="bg-white shadow rounded-lg p-5 mb-8">
+        <h2 className="text-lg font-medium mb-3">Update / Delete Category</h2>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+          <select
+            className="border rounded px-3 py-2"
+            value={updateCategory.id || ""}
+            onChange={(e) => {
+              const c = categories.find((x) => x.id === Number(e.target.value));
+              if (c) setUpdateCategory({ id: c.id, name: c.name });
+            }}
+          >
+            <option value="">Select Category</option>
+            {categories.map((c) => (
+              <option key={c.id} value={c.id}>
+                {c.name}
+              </option>
+            ))}
+          </select>
+
+          <input
+            type="text"
+            placeholder="New category name"
+            className="border rounded px-3 py-2"
+            value={updateCategory.name}
+            onChange={(e) =>
+              setUpdateCategory({ ...updateCategory, name: e.target.value })
+            }
+          />
+        </div>
+
+        <div className="flex gap-3 mt-4">
+          <button
+            onClick={handleUpdateCategory}
+            className="bg-yellow-600 text-white px-4 py-2 rounded hover:bg-yellow-700"
+          >
+            Update
+          </button>
+
+          <button
+            onClick={handleDeleteCategory}
+            className="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700"
+          >
+            Delete
           </button>
         </div>
       </div>
@@ -227,18 +361,18 @@ export default function AdminPage() {
               type="text"
               placeholder={key}
               className="border rounded px-3 py-2"
-              value={productForm[key]}
+              value={createForm[key]}
               onChange={(e) =>
-                setProductForm({ ...productForm, [key]: e.target.value })
+                setCreateForm({ ...createForm, [key]: e.target.value })
               }
             />
           ))}
 
           <select
             className="border rounded px-3 py-2"
-            value={productForm.categoryId}
+            value={createForm.categoryId}
             onChange={(e) =>
-              setProductForm({ ...productForm, categoryId: e.target.value })
+              setCreateForm({ ...createForm, categoryId: e.target.value })
             }
           >
             <option value="">Select Category</option>
@@ -250,11 +384,86 @@ export default function AdminPage() {
           </select>
         </div>
         <button
-          onClick={handleCreateProduct}
           className="mt-4 bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700"
+          onClick={handleCreateProduct}
         >
           Create Product
         </button>
+      </div>
+
+      {/* UPDATE + DELETE PRODUCT */}
+      <div className="bg-white shadow rounded-lg p-5 mb-8">
+        <h2 className="text-lg font-medium mb-3">Update / Delete Product</h2>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+          <select
+            className="border rounded px-3 py-2"
+            value={updateForm.id || ""}
+            onChange={(e) => {
+              const p = products.find((p) => p.id === Number(e.target.value));
+              if (p)
+                setUpdateForm({
+                  id: p.id,
+                  sku: p.sku,
+                  name: p.name,
+                  description: p.description,
+                  price: p.price,
+                  stock: p.stock,
+                  categoryId: p.categoryId,
+                });
+            }}
+          >
+            <option value="">Select Product</option>
+            {products.map((p) => (
+              <option key={p.id} value={p.id}>
+                {p.name}
+              </option>
+            ))}
+          </select>
+
+          {["sku", "name", "description", "price", "stock"].map((key) => (
+            <input
+              key={key}
+              type="text"
+              placeholder={key}
+              className="border rounded px-3 py-2"
+              value={updateForm[key]}
+              onChange={(e) =>
+                setUpdateForm({ ...updateForm, [key]: e.target.value })
+              }
+            />
+          ))}
+
+          <select
+            className="border rounded px-3 py-2"
+            value={updateForm.categoryId}
+            onChange={(e) =>
+              setUpdateForm({ ...updateForm, categoryId: e.target.value })
+            }
+          >
+            <option value="">Select Category</option>
+            {categories.map((c) => (
+              <option key={c.id} value={c.id}>
+                {c.name}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        <div className="flex gap-3 mt-4">
+          <button
+            className="bg-yellow-600 text-white px-4 py-2 rounded hover:bg-yellow-700"
+            onClick={handleUpdateProduct}
+          >
+            Update
+          </button>
+          <button
+            className="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700"
+            onClick={handleDeleteProduct}
+          >
+            Delete
+          </button>
+        </div>
       </div>
 
       {/* RESTOCK PRODUCT */}

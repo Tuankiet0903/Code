@@ -15,12 +15,10 @@ const router = express.Router();
  *       properties:
  *         id:
  *           type: integer
- *         // Add other user properties based on your Prisma schema, e.g.:
  *         name:
  *           type: string
  *         email:
  *           type: string
- *         // etc.
  */
 
 /**

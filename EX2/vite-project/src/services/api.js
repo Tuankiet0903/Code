@@ -27,7 +27,7 @@ apiClient.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response) {
-      const message = error.response.data?.message || error.response.statusText;
+      const message = error.response.data?.error || error.response.statusText;
       throw new Error(`API Error (${error.response.status}): ${message}`);
     } else if (error.request) {
       throw new Error("No response from server. Please check your connection.");
@@ -209,6 +209,26 @@ export async function adjustPrice(productId, newPrice) {
   return response.data;
 }
 
+export async function updateCategory(id, name) {
+  const response = await apiClient.put(`admin/categories/${id}`, { name });
+  return response.data;
+}
+
+export async function deleteCategory(id) {
+  const response = await apiClient.delete(`admin/categories/${id}`);
+  return response.data;
+}
+
+export async function updateProduct(id, productData) {
+  const response = await apiClient.put(`admin/products/${id}`, productData);
+  return response.data;
+}
+
+export async function deleteProduct(id) {
+  const response = await apiClient.delete(`admin/products/${id}`);
+  return response.data;
+}
+
 // Export default helpers
 export default {
   getCart,
@@ -226,4 +246,8 @@ export default {
   createProduct,
   restockProduct,
   adjustPrice,
+  updateCategory,
+  deleteCategory,
+  updateProduct,
+  deleteProduct,
 };

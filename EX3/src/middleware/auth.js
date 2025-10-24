@@ -1,6 +1,7 @@
 // src/middleware/auth.js
 import jwt from "jsonwebtoken";
 import { PrismaClient } from "@prisma/client";
+import logger from "../utils/logger.js";
 
 const prisma = new PrismaClient();
 
@@ -25,6 +26,7 @@ export const isLoggedIn = async (req, res, next) => {
     req.user = user;
     next();
   } catch (err) {
+    logger.error(err);
     return res.status(401).json({ error: "Invalid token" });
   }
 };
@@ -53,6 +55,7 @@ export const authMiddleware =
       req.user = user;
       next();
     } catch (err) {
+      logger.error(err);
       return res.status(401).json({ error: "Invalid token" });
     }
   };

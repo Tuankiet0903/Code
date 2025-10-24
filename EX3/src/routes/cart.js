@@ -1,6 +1,7 @@
 import express from "express";
 import { PrismaClient } from "@prisma/client";
 import redis from "../services/redisClient.js";
+import logger from "../utils/logger.js";
 
 const prisma = new PrismaClient();
 const router = express.Router();
@@ -508,6 +509,7 @@ router.post("/checkout", async (req, res) => {
 
     res.status(201).json({ message: "Order created", order });
   } catch (err) {
+    logger.error(err);
     console.error(err);
     res.status(400).json({ error: err.message || "Checkout failed" });
   }

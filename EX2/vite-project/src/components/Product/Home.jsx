@@ -39,7 +39,7 @@ export default function Home() {
   };
 
   return (
-    <div className="space-y-6 my-10">
+    <div className="space-y-6 mt-10 pb-10">
       {/* Search bar */}
       <div className="flex items-center justify-center gap-3">
         <div className="w-full max-w-2xl">
