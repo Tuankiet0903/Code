@@ -98,7 +98,7 @@ export default function ThreejsPage() {
 
       // 👇 Model tự quay quanh trục Y
       if (model) {
-        model.rotation.y += 0.005; // điều chỉnh tốc độ xoay ở đây
+        model.rotation.y += 0.001; // điều chỉnh tốc độ xoay ở đây
       }
 
       controls.update();

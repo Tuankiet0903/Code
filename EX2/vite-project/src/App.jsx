@@ -8,6 +8,7 @@ import ChessPage from "./pages/ChessPage.jsx";
 import ChessPageMultiplayer from "./pages/ChessPageMulti.jsx";
 import ThreejsPage from "./pages/Threejs.jsx";
 import ProductPage from "./pages/ProductPage.jsx";
+import InvitationCard from "./pages/InvitationPage.jsx";
 
 function App() {
   return (
@@ -19,6 +20,7 @@ function App() {
         <Route path="2048" element={<Board2048 />} />
         <Route path="chess" element={<ChessPage />} />
         <Route path="chess-multiplayer" element={<ChessPageMultiplayer />} />
+        <Route path="invitation" element={<InvitationCard />} />
         <Route
           path="threejs"
           element={

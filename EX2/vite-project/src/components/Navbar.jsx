@@ -8,6 +8,7 @@ const MenuCates = [
   { tag: "Chess Multiplayer", link: "/chess-multiplayer" },
   { tag: "Three.js", link: "/threejs" },
   { tag: "Products", link: "/products" },
+  { tag: "Invitation", link: "/invitation" },
 ];
 
 export default function Navbar() {
