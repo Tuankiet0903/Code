@@ -1,0 +1,21 @@
+[
+  {
+    "id": 4000001,
+    "province": "Đà Nẵng",
+    "year": "2025",
+    "math": 5.75,
+    "literature": 6.5,
+    "geography": 7.25,
+    "language": 5,
+    "lang_type": "N1"
+  },
+  {
+    "id": 4000002,
+    "province": "Đà Nẵng",
+    "year": "2025",
+    "math": 7,
+    "physical": 7.25,
+    "chemistry": 4.85,
+    "literature": 6.25
+  }
+]
