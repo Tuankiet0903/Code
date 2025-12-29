@@ -2,7 +2,7 @@ Dưới đây là nội dung chi tiết về các ngày lễ trong lịch Phụn
 
 # HƯỚNG DẪN LỊCH PHỤNG VỤ CÔNG GIÁO: LỄ CỐ ĐỊNH & LỄ DI ĐỘNG
 
-Trong Giáo hội Công giáo, các ngày lễ được chia thành hai hệ thống chính: **Hệ thống cố định** (theo dương lịch) và **Hệ thống di động** (xoay quanh ngày lễ Phục Sinh).
+Trong Giáo hội Công giáo, các ngày lễ được chia thành hai hệ thống chính: **Hệ thống cố định** (theo dương lịch) và **Hệ thống di động** (xoay quanh ngày lễ Phục Sinh). Ngoài ra, tại Việt Nam, lịch Phụng vụ còn hội nhập văn hóa với ngày **Tết Nguyên Đán**.
 
 ## 1. Danh Mục Các Lễ Trọng Cố Định
 
@@ -46,7 +46,18 @@ Khi đã có ngày Chúa Nhật Phục Sinh, các lễ khác được tính theo
 - **Lễ Mình Máu Thánh Chúa:** = (Ngày Phục Sinh) + 64 ngày. *(Thường cử hành vào Chúa Nhật)*.
 - **Lễ Thánh Tâm Chúa Giêsu:** = (Ngày Phục Sinh) + 68 ngày. *(Thứ Sáu sau lễ Mình Máu Thánh)*.
 
-## 3. Hệ Thống Mùa Vọng và Cuối Năm
+## 3. Tết Nguyên Đán (Lịch Hội Nhập Văn Hóa)
+
+Những ngày Tết cổ truyền được cử hành trọng thể trong Phụng vụ:
+
+- **Mồng 1 Tết:** Cầu bình an cho năm mới. *(Tên năm theo hệ Can Chi)*
+- **Mồng 2 Tết:** Kính nhớ Tổ Tiên, Ông Bà, Cha Mẹ.
+- **Mồng 3 Tết:** Thánh hóa công ăn việc làm.
+
+**Quy tắc đặc biệt:**
+> Nếu **Thứ Tư Lễ Tro** trùng vào các ngày **Mồng 1, Mồng 2 hoặc Mồng 3 Tết**, thì Lễ Tro sẽ được dời lại vào ngày ngay sau Mồng 3 Tết.
+
+## 4. Hệ Thống Mùa Vọng và Cuối Năm
 
 Mùa Vọng không tính theo lễ Phục Sinh mà tính ngược từ lễ Giáng Sinh (25/12).
 
