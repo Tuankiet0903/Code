@@ -4,7 +4,7 @@ const { Lunar } = require("lunar-javascript");
 // CẤU HÌNH NĂM
 const START_YEAR = 2026;
 const END_YEAR = 2030;
-const OUTPUT_FILE = "LichPhungVu_2026-2030.ics";
+const OUTPUT_FILE = `LichPhungVu_${START_YEAR}-${END_YEAR}.ics`;
 
 // --- CÁC HÀM TIỆN ÍCH ---
 
@@ -148,7 +148,7 @@ let icsContent = [
   "BEGIN:VCALENDAR",
   "VERSION:2.0",
   "PRODID:-//NodeJS//Lich Phung Vu Generator//VI",
-  "X-WR-CALNAME:Lịch Công Giáo 2026-2030",
+  `X-WR-CALNAME:Lịch Công Giáo ${START_YEAR}-${END_YEAR}`,
   "CALSCALE:GREGORIAN",
   "METHOD:PUBLISH",
   "X-WR-TIMEZONE:Asia/Ho_Chi_Minh",
