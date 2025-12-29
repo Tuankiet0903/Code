@@ -3,7 +3,7 @@ const fs = require("fs");
 // CẤU HÌNH NĂM
 const START_YEAR = 2026;
 const END_YEAR = 2030;
-const OUTPUT_FILE = "LichPhungVu_2026-2030_NodeJS.ics";
+const OUTPUT_FILE = "LichPhungVu_2026-2030.ics";
 
 // 1. Hàm tính ngày Lễ Phục Sinh (Easter) - Thuật toán "Anonymous Date"
 function getEasterDate(year) {
@@ -34,7 +34,25 @@ function addDays(date, days) {
   return result;
 }
 
-// 3. Hàm format ngày cho ICS (YYYYMMDD)
+// 3. Hàm tính Chúa Nhật I Mùa Vọng (Chúa Nhật gần 30/11 nhất)
+function getAdventSunday(year) {
+  // Lấy ngày 30/11 của năm
+  const nov30 = new Date(year, 10, 30); // Tháng 11 là index 10
+  const dayOfWeek = nov30.getDay(); // 0: CN, 1: T2, ...
+  
+  // Nếu là CN thì chính là nó
+  if (dayOfWeek === 0) return nov30;
+  
+  // Nếu Thứ 2-4 (1-3) -> Lùi về CN trước
+  if (dayOfWeek < 4) {
+    return addDays(nov30, -dayOfWeek);
+  } else {
+    // Nếu Thứ 5-7 (4-6) -> Tiến tới CN sau
+    return addDays(nov30, 7 - dayOfWeek);
+  }
+}
+
+// 4. Hàm format ngày cho ICS (YYYYMMDD)
 function formatDateICS(date) {
   const y = date.getFullYear();
   const m = String(date.getMonth() + 1).padStart(2, "0");
@@ -42,7 +60,7 @@ function formatDateICS(date) {
   return `${y}${m}${d}`;
 }
 
-// 4. Tạo chuỗi sự kiện VEVENT
+// 5. Tạo chuỗi sự kiện VEVENT
 function createEvent(summary, dateObj, description = "") {
   const dtStart = formatDateICS(dateObj);
   const dtEnd = formatDateICS(addDays(dateObj, 1)); // Sự kiện cả ngày kết thúc vào hôm sau
@@ -59,12 +77,14 @@ function createEvent(summary, dateObj, description = "") {
   ].join("\r\n");
 }
 
-// 5. Danh sách các lễ cố định (Ngày, Tháng - 0 index)
+// 6. Danh sách các lễ cố định (Ngày, Tháng - 0 index)
 const fixedHolidays = [
-  { d: 1, m: 0, name: "ĐỨC MARIA - MẸ THIÊN CHÚA (Lễ Trọng)" },
-  { d: 19, m: 2, name: "THÁNH GIUSE BẠN TRĂM NĂM ĐỨC MARIA (Lễ Trọng)" },
-  { d: 25, m: 2, name: "LỄ TRUYỀN TIN (Lễ Trọng)" }, // Lưu ý: Có thể dời nếu trùng Tuần Thánh
+  { d: 1, m: 0, name: "ĐỨC MARIA, MẸ THIÊN CHÚA (Lễ Trọng)" },
+  { d: 6, m: 0, name: "CHÚA HIỂN LINH (Thường dời vào CN)" }, // Lễ Hiển Linh
+  { d: 19, m: 2, name: "THÁNH GIUSE, BẠN TRĂM NĂM ĐỨC MARIA (Lễ Trọng)" },
+  { d: 25, m: 2, name: "LỄ TRUYỀN TIN (Lễ Trọng)" },
   { d: 1, m: 4, name: "THÁNH GIUSE THỢ" },
+  { d: 24, m: 5, name: "SINH NHẬT THÁNH GIOAN TẨY GIẢ (Lễ Trọng)" }, // Mới thêm
   { d: 29, m: 5, name: "THÁNH PHÊRÔ VÀ PHAOLÔ TÔNG ĐỒ (Lễ Trọng)" },
   { d: 15, m: 7, name: "ĐỨC MẸ HỒN XÁC LÊN TRỜI (Lễ Trọng)" },
   { d: 1, m: 10, name: "LỄ CÁC THÁNH NAM NỮ (Lễ Trọng)" },
@@ -83,6 +103,7 @@ let icsContent = [
   "X-WR-CALNAME:Lịch Công Giáo 2026-2030",
   "CALSCALE:GREGORIAN",
   "METHOD:PUBLISH",
+  "X-WR-TIMEZONE:Asia/Ho_Chi_Minh",
 ];
 
 console.log(`Đang tạo lịch từ năm ${START_YEAR} đến ${END_YEAR}...`);
@@ -134,8 +155,7 @@ for (let year = START_YEAR; year <= END_YEAR; year++) {
     createEvent("ĐẠI LỄ PHỤC SINH", easterDate, "Mừng Chúa Sống Lại.")
   );
 
-  // 6. Lễ Thăng Thiên (Tại VN dời vào Chúa Nhật kế tiếp = Phục sinh + 42 ngày, gốc là +39)
-  // Theo lịch VN thường dời vào Chúa Nhật VII Phục Sinh
+  // 6. Lễ Thăng Thiên (Dời vào CN kế tiếp = Phục sinh + 42 ngày)
   const ascension = addDays(easterDate, 42);
   icsContent.push(
     createEvent(
@@ -155,11 +175,35 @@ for (let year = START_YEAR; year <= END_YEAR; year++) {
     )
   );
 
-  // 8. Lễ Mình Máu Thánh Chúa (Tại VN dời vào Chúa Nhật sau Lễ Chúa Ba Ngôi)
-  // Chúa Ba Ngôi = Pent + 7, Mình Máu Thánh = Pent + 14
-  const corpusChristi = addDays(pentecost, 14);
+  // 8. Lễ Chúa Ba Ngôi (Phục sinh + 56 ngày - CN sau Hiện Xuống)
+  const trinity = addDays(easterDate, 56);
   icsContent.push(
-    createEvent("LỄ MÌNH MÁU THÁNH CHÚA", corpusChristi, "Lễ Trọng.")
+    createEvent("LỄ CHÚA BA NGÔI", trinity, "Lễ Trọng.")
+  );
+
+  // 9. Lễ Mình Máu Thánh Chúa (Phục sinh + 63 ngày - Dời vào CN sau Ba Ngôi)
+  const corpusChristi = addDays(easterDate, 63);
+  icsContent.push(
+    createEvent("LỄ MÌNH MÁU THÁNH CHÚA", corpusChristi, "Lễ Trọng (Dời vào Chúa Nhật).")
+  );
+
+  // 10. Lễ Thánh Tâm Chúa Giêsu (Phục sinh + 68 ngày - Thứ Sáu sau Mình Máu Thánh)
+  const sacredHeart = addDays(easterDate, 68);
+  icsContent.push(
+    createEvent("LỄ THÁNH TÂM CHÚA GIÊSU", sacredHeart, "Lễ Trọng.")
+  );
+
+  // C. XỬ LÝ MÙA VỌNG & CUỐI NĂM
+  // 1. Chúa Nhật I Mùa Vọng
+  const advent1 = getAdventSunday(year);
+  icsContent.push(
+    createEvent("CHÚA NHẬT I MÙA VỌNG", advent1, "Khởi đầu Năm Phụng Vụ mới.")
+  );
+
+  // 2. Lễ Chúa Kitô Vua (CN trước CN I Mùa Vọng)
+  const christKing = addDays(advent1, -7);
+  icsContent.push(
+    createEvent("LỄ CHÚA KITÔ VUA", christKing, "Kết thúc Năm Phụng Vụ.")
   );
 }
 
